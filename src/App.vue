@@ -3,7 +3,10 @@
     <!-- Эмиты : там тут -->
     <!-- Пропсы : там тут -->
     <Form @submitForm="onFormSubmit" />
-    <Select :optionForIncorrectInput="currentOption" @changeOption="onChangeOption" />
+    <Select
+      :optionForIncorrectInput="currentOption"
+      @changeOption="onChangeOption"
+    />
     <TotalBalance :total="totalBalance" />
     <BudgetList :list="filteredItems" @deleteItem="onDeleteItem" />
   </div>
@@ -14,6 +17,8 @@ import BudgetList from "@/components/BudjetList";
 import TotalBalance from "@/components/TotalBalance";
 import Form from "@/components/Form";
 import Select from "@/components/Select";
+import { mapGetters } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   name: "App",
@@ -24,72 +29,59 @@ export default {
     Select,
   },
   data: () => ({
-    list: {
-      1: {
-        type: "INCOME",
-        value: 100,
-        comment: "Some comment",
-        id: 1,
-      },
-      2: {
-        type: "OUTCOME",
-        value: -50,
-        comment: "outcome comment",
-        id: 2,
-      },
-    },
-    sortedList: {},
     currentOption: "",
   }),
   computed: {
+    ...mapGetters("transaction", ["transactionList", "sortedTransactionList"]),
+
     totalBalance() {
-      return Object.values(this.list).reduce(
+      return Object.values(this.transactionList).reduce(
         (acc, item) => acc + item.value,
         0
       );
     },
     filteredItems() {
-      if (Object.keys(this.sortedList).length) {
-        return this.sortedList;
+      if (Object.keys(this.sortedTransactionList).length) {
+        return this.sortedTransactionList;
       } else {
         return {};
       }
     },
   },
   methods: {
+    ...mapActions("transaction", [
+      "addTransactionInList",
+      "addTransactionInSortedList",
+      "deleteTransactions",
+      "sortingTransactions",
+      "alignmentLists"
+    ]),
     onDeleteItem(id) {
-      //Метод для удаления свойства из объекта, при нем срабатывает реактивность,он удалит и вызовет перерендеринг
-      this.$delete(this.list, id);
-      this.$delete(this.sortedList, id);
+      this.deleteTransactions(id);
     },
     onFormSubmit(data) {
       const newOgj = {
         ...data,
         id: String(Math.random()),
       };
-      //Устанавливаем свойство в объект для реактивности
-      this.$set(this.list, newOgj.id, newOgj);
 
-      if (data.type !== this.currentOption && this.currentOption !== 'All') {
+      this.addTransactionInList(newOgj);
+
+      if (data.type !== this.currentOption && this.currentOption !== "All") {
         this.onChangeOption(data.type);
         return;
       }
-      this.$set(this.sortedList, newOgj.id, newOgj);
-      // this.onChangeOption(data.type)
+      this.addTransactionInSortedList(newOgj);
     },
     onChangeOption(option) {
-      // this.sortedList = {};
       this.currentOption = option;
+
       if (option === "All") {
-        return (this.sortedList = this.list);
+        this.alignmentLists()
+        return
       }
-      this.sortedList = Object.values(this.list).reduce((acc, item) => {
-        if (item.type === option) {
-          // this.sortedList.push(item);
-          acc[item.id] = item;
-        }
-        return acc;
-      }, {});
+
+      this.sortingTransactions(option);
     },
   },
 };
