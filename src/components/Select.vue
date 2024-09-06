@@ -44,11 +44,11 @@ export default {
       this.$emit("changeOption", option);
     },
     handlerOption() {
-      this.value = this.optionForIncorrectInput
-    }
+      this.value = this.optionForIncorrectInput;
+    },
   },
   watch: {
-    optionForIncorrectInput: 'handlerOption'
+    optionForIncorrectInput: "handlerOption",
   },
 };
 </script>

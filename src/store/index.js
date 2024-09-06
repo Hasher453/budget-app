@@ -1,7 +1,6 @@
-import Vue from "vue";
-import Vuex from "vuex";
-import transaction from "./modules/transaction";
-
+import Vue from 'vue';
+import Vuex from 'vuex';
+import transaction from './modules/transaction';
 
 Vue.use(Vuex);
 
